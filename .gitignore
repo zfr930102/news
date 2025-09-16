@@ -1,0 +1,38 @@
+# 构建系统生成的文件
+*.apk
+*.aar
+*.aab
+*.dex
+*.class
+
+# 构建输出目录
+build/
+**/build/  # 忽略所有层级的 build 目录
+app/build/
+
+# Gradle 相关文件
+.gradle/
+gradle/apparatus/
+gradle/wrapper/dists/
+
+# 本地配置文件，通常包含机器特定的路径（如 SDK 路径）
+local.properties
+gradle.properties
+
+# Android Studio / IntelliJ IDEA 特定文件
+.idea/
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+
+# 其他临时或生成文件
+.DS_Store
+.externalNativeBuild
+.cxx/
+captures/
+*.log
+*.tmp
+*.hprof
