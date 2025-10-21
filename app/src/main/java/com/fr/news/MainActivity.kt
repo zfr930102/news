@@ -63,6 +63,7 @@ import com.fr.news.manager.appContext
 import com.fr.news.model.data.NewsData
 import com.fr.news.state.ResponseState
 import com.fr.news.ui.theme.NewsTheme
+import com.fr.news.utils.BASE_TAG
 import com.fr.news.utils.DouyinCookieManager
 import com.fr.news.view_model.NewTitleItem
 import com.fr.news.view_model.NewsViewModel
@@ -71,7 +72,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
-const val TAG = "MainActivity"
+const val TAG = BASE_TAG +"MainActivity"
 
 class MainActivity : ComponentActivity() {
     val viewModel: NewsViewModel = NewsViewModel()

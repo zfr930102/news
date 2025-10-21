@@ -40,11 +40,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fr.news.constant.NewsType
 import com.fr.news.manager.appContext
 import com.fr.news.ui.theme.NewsTheme
+import com.fr.news.utils.BASE_TAG
 import com.fr.news.utils.DouyinCookieManager
 
-var maxRedirectionCount = 5
+var maxRedirectionCount = 1
 var redirectionCount = 0
-const val WEB_TAG = "WebviewActivity"
+const val WEB_TAG = BASE_TAG +"WebviewActivity"
 class WebviewActivity:ComponentActivity() {
 
     val douyinCookieManager = DouyinCookieManager.getInstance(appContext)
@@ -204,6 +205,7 @@ fun rememberWebViewClient(onProgressChanged: (Int) -> Unit): WebViewClient{
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
+            Log.d(WEB_TAG, "onPageStarted: url = $url")
             onProgressChanged(0)
             injectAntiDetectionScript(view)
         }
@@ -276,10 +278,11 @@ private fun injectAntiDetectionScript(view: WebView?) {
 }
 
 private fun handleUrl(view: WebView?, url: String): Boolean {
-    Log.d(WEB_TAG, "handleUrl: url = $url")
+    Log.d(WEB_TAG, "handleUrl: url = $url maxRedirectionCount = $maxRedirectionCount")
 
     // 1. 处理自定义协议（如 zhihu://）
     if (url.startsWith("zhihu://") && redirectionCount < maxRedirectionCount) {
+        Log.d(WEB_TAG, "handleUrl: zhihu")
         maxRedirectionCount = 1
         // 尝试转换为标准的知乎网页 URL
         val standardUrl = convertZhihuSchemeToStandardUrl(url)

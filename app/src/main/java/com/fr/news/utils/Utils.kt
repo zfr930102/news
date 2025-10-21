@@ -3,7 +3,10 @@ package com.fr.news.utils
 import android.util.Log
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
-const val TAG = "Utils"
+
+
+const val BASE_TAG = "news::"
+const val TAG = BASE_TAG + "Utils"
 // URL编码函数
 fun encodeURIComponent(text: String): String {
     return try {
