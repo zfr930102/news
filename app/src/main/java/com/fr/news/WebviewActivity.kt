@@ -198,14 +198,23 @@ fun rememberWebViewClient(onProgressChanged: (Int) -> Unit): WebViewClient{
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             Log.d(WEB_TAG, "onPageFinished: url = $url")
-            onProgressChanged(100)
-            val cookies = CookieManager.getInstance().getCookie(url)
-            Log.d(WEB_TAG, "onPageFinished: cookies = $cookies")
+            view?.progress.let {
+                if (it == 100) {
+                    onProgressChanged(100)
+                    Log.d(TAG, "onPageFinished: over")
+                }
+            }
         }
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             Log.d(WEB_TAG, "onPageStarted: url = $url")
+            view?.progress?.let {
+                if (it > 0) {
+                    Log.d(TAG, "onPageStarted: web already loading so return started method")
+                    return
+                }
+            }
             onProgressChanged(0)
             injectAntiDetectionScript(view)
         }
