@@ -251,7 +251,7 @@ class DouyinCookieManager(context: Context) {
     }
 
     companion object {
-        private const val TAG = "DouyinCookieManager"
+        private const val TAG = BASE_TAG + "DouyinCookieManager"
 
         @Volatile
         private var instance: DouyinCookieManager? = null

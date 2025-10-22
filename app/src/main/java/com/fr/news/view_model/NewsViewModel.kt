@@ -11,6 +11,7 @@ import com.fr.news.model.service.RetrofitClient
 import com.fr.news.state.MultiState
 import com.fr.news.state.RequestState
 import com.fr.news.state.ResponseState
+import com.fr.news.utils.BASE_TAG
 import com.fr.news.utils.encodeURIComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +28,7 @@ class NewsViewModel: ViewModel() {
     private val _newsData = MutableStateFlow(MultiState())
     val newsData: StateFlow<MultiState> = _newsData
     val retrofitClient = RetrofitClient()
-    val TAG = "NewsViewModel"
+    val TAG = BASE_TAG +"NewsViewModel"
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
@@ -185,7 +186,7 @@ class NewsViewModel: ViewModel() {
                         if (it?.ok != 1) {
                             return@let null
                         }
-                        val newsDataTemp = it?.data?.cards?.firstOrNull()?.card_group?.
+                        val newsDataTemp = it.data.cards.firstOrNull()?.card_group?.
                         filterIndexed { index, _ -> index != 0 //过滤第一个元素
                         }?.filter { card ->
                             Log.d(TAG, "getWeiboData:card.actionlog.ext = ${card.actionlog.ext}")

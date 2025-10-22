@@ -17,21 +17,16 @@ val newsTitleList = listOf(
         type = NewsType.ZHIHU
     ),
 
-//    NewTitleItem(
-//        imageRes = R.mipmap.weibo,
-//        title = "微博",
-//        type = NewsType.WEIBO
-//    ),
+    NewTitleItem(
+        imageRes = R.mipmap.weibo,
+        title = "微博",
+        type = NewsType.WEIBO
+    ),
     NewTitleItem(
         imageRes = R.mipmap.wallstreetcn,
         title = "华尔街见闻",
         type = NewsType.WALLSTREET
     ),
-//    NewTitleItem(
-//        imageRes = R.mipmap.douyin,
-//        title = "抖音",
-//        type = NewsType.DOUYIN
-//    ),
     NewTitleItem(
         imageRes = R.mipmap.tieba,
         title = "百度贴吧",

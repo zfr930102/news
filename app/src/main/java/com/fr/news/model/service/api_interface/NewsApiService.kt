@@ -9,6 +9,7 @@ import com.fr.news.model.data.DouYinResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface ToutiaoApiService {
@@ -17,13 +18,11 @@ interface ToutiaoApiService {
 }
 
 interface WeiboApiService{
+    @Headers("Content-Type: application/json", "referer:https://s.weibo" +
+            ".com/top/summary?cate=realtimehot","mweibo-pwa:1","x-requested-with:XMLHttpRequest")
     @GET("api/container/getIndex")
     suspend fun getWeiboData(
-        @Query("containerid") containerid: String = "106003",
-        @Query("type") type:Int = 25,
-        @Query("t") t:Int = 3,
-        @Query("disable_hot") disableHot: Int = 1,
-        @Query("filter_type") filterType: String = "realtimehot")
+        @Query("containerid") containerid: String = "106003type%3D25%26t%3D3%26disable_hot%3D1%26filter_type%3Drealtimehot&title=%E5%BE%AE%E5%8D%9A%E7%83%AD%E6%90%9C&extparam=filter_type%3Drealtimehot%26mi_cid%3D100103%26pos%3D0_0%26c_type%3D30%26display_time%3D1540538388&luicode=10000011&lfid=231583")
     : Response<WeiboResponse>
 }
 
