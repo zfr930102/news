@@ -194,8 +194,7 @@ class NewsViewModel: ViewModel() {
                         }?.map { card ->
                             NewsData(
                                 title = card.desc,
-                                url = "https://s.weibo.com/weibo?q=${encodeURIComponent("#${card
-                                    .desc}#")}"
+                                url = card.scheme
                             )
                         }
                        return@let newsDataTemp

@@ -93,7 +93,7 @@ data class CardGroup(
     val actionlog: Actionlog,
     val card_type: Int,
     val desc: String,
-    val desc_extr: Int,
+    val desc_extr: String,
     val display_arrow: Int,
     val icon: String,
     val icon_height: Int,
