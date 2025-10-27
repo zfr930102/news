@@ -7,4 +7,5 @@ enum class NewsType {
     DOUYIN,
     TIEBA,
     TOUTIAO,
+    XUEQIU
 }

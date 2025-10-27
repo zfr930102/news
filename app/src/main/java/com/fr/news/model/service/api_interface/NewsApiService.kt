@@ -6,6 +6,7 @@ import com.fr.news.model.data.WallStreetResponse
 import com.fr.news.model.data.WeiboResponse
 import com.fr.news.model.data.ZhiHuResponse
 import com.fr.news.model.data.DouYinResponse
+import com.fr.news.model.data.XueQiuResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -69,5 +70,19 @@ interface BaiduTieBaApiService {
     ): Response<BaiduTieBaResponse>
 }
 
+interface XueQiuCookieApiService{
+    @GET
+    suspend fun getXueQiuCookie(): Response<Void>
+}
+
+interface XueQiuApiService {
+    @GET("v5/stock/hot_stock/list.json")
+    suspend fun getXueQiuData(
+        @Query("size") size:Int = 30,
+        @Query("_type") _type :Int = 10,
+        @Query("type") type:Int = 10,
+        @Header("Cookie") cookie:String
+    ): Response<XueQiuResponse>
+}
 
 

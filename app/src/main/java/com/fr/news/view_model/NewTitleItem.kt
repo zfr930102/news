@@ -46,10 +46,11 @@ val newsTitleList = listOf(
 //        imageRes = R.mipmap.cls,
 //        title = "财联社"
 //    ),
-//    NewTitleItem(
-//        imageRes = R.mipmap.xueqiu,
-//        title = "雪球"
-//    ),
+    NewTitleItem(
+        imageRes = R.mipmap.xueqiu,
+        title = "雪球",
+        type = NewsType.XUEQIU
+    ),
 //    NewTitleItem(
 //        imageRes = R.mipmap.hackernews,
 //        title = "Hacker News"

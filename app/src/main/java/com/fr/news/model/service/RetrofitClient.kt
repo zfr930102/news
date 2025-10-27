@@ -12,6 +12,8 @@ import com.fr.news.model.service.api_interface.DouYinApiService
 import com.fr.news.model.service.api_interface.ToutiaoApiService
 import com.fr.news.model.service.api_interface.WallStreetCNApiService
 import com.fr.news.model.service.api_interface.WeiboApiService
+import com.fr.news.model.service.api_interface.XueQiuApiService
+import com.fr.news.model.service.api_interface.XueQiuCookieApiService
 import com.fr.news.model.service.api_interface.ZhiHuApiService
 import okhttp3.Cache
 import okhttp3.CacheControl
@@ -29,6 +31,7 @@ const val CONNECT_TIMEOUT = 15L // 15秒
 const val READ_TIMEOUT = 30L // 30秒
 const val WRITE_TIMEOUT = 30L // 30秒
 const val TAG = "RetrofitClient"
+
 class RetrofitClient {
     var okHttpClient = createOkHttpClient()
 
@@ -97,7 +100,7 @@ class RetrofitClient {
         return networkInfo != null && networkInfo.isConnected
     }
 
-    fun errorHandleInterceptor():Interceptor{
+    fun errorHandleInterceptor(): Interceptor {
         return Interceptor { chain ->
             try {
                 Log.d(TAG, "errorHandleInterceptor: run")
@@ -163,6 +166,16 @@ class RetrofitClient {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(WallStreetCNApiService::class.java)
+
+    val xueQiuCookieApiService: XueQiuCookieApiService =
+        Retrofit.Builder().baseUrl(BaseUrl.XUE_QIU_COOKIE_BASE_URL)
+            .client(okHttpClient).addConverterFactory(GsonConverterFactory.create()).build()
+            .create(XueQiuCookieApiService::class.java)
+
+    val xueQiuApiService: XueQiuApiService =
+        Retrofit.Builder().baseUrl(BaseUrl.XUE_QIU_BASE_URL)
+            .client(okHttpClient).addConverterFactory(GsonConverterFactory.create()).build()
+            .create(XueQiuApiService::class.java)
 }
 
 class RequestCanceledException(message: String) : IOException(message)

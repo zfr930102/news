@@ -62,8 +62,21 @@ class NewsViewModel: ViewModel() {
                 Log.d(TAG, "getData: TIEBA")
                 getTieBaData()
             }
+
+            NewsType.XUEQIU -> {
+                Log.d(TAG, "getData: XUEQIU")
+                getXueQiuData()
+            }
         }
         Log.d(TAG, "getData: end")
+    }
+
+    private fun getXueQiuData() {
+        updatePageState(NewsType.XUEQIU){
+            Log.d(TAG, "getXueQiuData: start")
+            it.copy(isLoading = true, error = null)
+        }
+        viewModelScope.launch {  }
     }
 
     private fun getTieBaData() {

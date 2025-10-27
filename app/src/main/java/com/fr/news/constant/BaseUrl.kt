@@ -7,4 +7,6 @@ object BaseUrl {
     const val WALL_STREET_BASE_URL = "https://api-one.wallstcn.com/"
     const val DOU_YIN_BASE_URL = "https://www.douyin.com/"
     const val BAIDU_TIE_BA_BASE_URL = "https://tieba.baidu.com/"
+    const val XUE_QIU_COOKIE_BASE_URL = "https://xueqiu.com/hq"
+    const val XUE_QIU_BASE_URL = "https://stock.xueqiu.com/"
 }
