@@ -71,7 +71,7 @@ interface BaiduTieBaApiService {
 }
 
 interface XueQiuCookieApiService{
-    @GET
+    @GET("hp")
     suspend fun getXueQiuCookie(): Response<Void>
 }
 

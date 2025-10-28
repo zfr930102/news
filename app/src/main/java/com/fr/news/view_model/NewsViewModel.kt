@@ -19,16 +19,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.Response
 import kotlin.apply
 import kotlin.collections.toMutableMap
 import kotlin.coroutines.cancellation.CancellationException
 
-class NewsViewModel: ViewModel() {
+class NewsViewModel : ViewModel() {
     //利用状态管理，管理当前整合头条新闻的数据。
     private val _newsData = MutableStateFlow(MultiState())
     val newsData: StateFlow<MultiState> = _newsData
     val retrofitClient = RetrofitClient()
-    val TAG = BASE_TAG +"NewsViewModel"
+    val TAG = BASE_TAG + "NewsViewModel"
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
@@ -42,22 +43,27 @@ class NewsViewModel: ViewModel() {
                 Log.d(TAG, "getData: TOUTIAO")
                 getToutiaoData()
             }
+
             NewsType.ZHIHU -> {
                 Log.d(TAG, "getData: ZHIHU")
                 getZhiHuData()
             }
-            NewsType.WEIBO ->{
+
+            NewsType.WEIBO -> {
                 Log.d(TAG, "getData: WEIBO")
                 getWeiboData()
             }
+
             NewsType.WALLSTREET -> {
                 Log.d(TAG, "getData: WALLSTREET")
                 getWallStreetData()
             }
+
             NewsType.DOUYIN -> {
                 Log.d(TAG, "getData: DOUYIN")
                 getDouYinData()
             }
+
             NewsType.TIEBA -> {
                 Log.d(TAG, "getData: TIEBA")
                 getTieBaData()
@@ -72,15 +78,49 @@ class NewsViewModel: ViewModel() {
     }
 
     private fun getXueQiuData() {
-        updatePageState(NewsType.XUEQIU){
+        updatePageState(NewsType.XUEQIU) {
             Log.d(TAG, "getXueQiuData: start")
             it.copy(isLoading = true, error = null)
         }
-        viewModelScope.launch {  }
+        viewModelScope.launch {
+            try {
+                val xueQiuCookieData = retrofitClient.xueQiuCookieApiService.getXueQiuCookie()
+                val xueQiuCookie: String = getCookiesForResponse(xueQiuCookieData)
+                if (xueQiuCookie.isEmpty()) {
+                    updatePageState(NewsType.XUEQIU){
+                        Log.d(TAG, "getXueQiuData: cookie is null")
+                        it.copy(isLoading = false, error = "获取雪球数据失败,失败信息为：cookie是空")
+                    }
+                    return@launch
+                }
+                val xueQiuData = retrofitClient.xueQiuApiService.getXueQiuData(cookie = xueQiuCookie)
+                if (xueQiuData.isSuccessful) {
+                    val xueQiuNewsData = xueQiuData.body()?.data?.items?.filter {
+                        it.ad == 0
+                    }?.map {
+                        NewsData(it.name,"https://xueqiu.com/s/${it.code}")
+                    }
+                    Log.d(TAG, "getXueQiuData: data size = ${xueQiuNewsData?.size}")
+                    updatePageState(NewsType.XUEQIU) {
+                        it.copy(isLoading = false, data = xueQiuNewsData)
+                    }
+                } else {
+                    updatePageState(NewsType.XUEQIU){
+                        Log.d(TAG, "getXueQiuData: failed code ${xueQiuData.code()}")
+                        it.copy(isLoading = false, error = "获取雪球数据失败,失败信息为：${xueQiuData.code()}")
+                    }
+                }
+            } catch (e: Exception) {
+                updatePageState(NewsType.XUEQIU){
+                    Log.d(TAG, "getXueQiuData: 获取雪球数据失败,失败信息为：${e.message}")
+                    it.copy(isLoading = false, error = "获取雪球数据失败,失败信息为：${e.message}")
+                }
+            }
+        }
     }
 
     private fun getTieBaData() {
-        updatePageState(NewsType.TIEBA){
+        updatePageState(NewsType.TIEBA) {
             Log.d(TAG, "getTieBaData: start")
             it.copy(isLoading = true, error = null)
         }
@@ -92,18 +132,21 @@ class NewsViewModel: ViewModel() {
                         NewsData(it.topic_name, it.topic_url)
                     }
                     Log.d(TAG, "getTieBaData: success newsData.size = ${newsData?.size}")
-                    updatePageState(NewsType.TIEBA){
+                    updatePageState(NewsType.TIEBA) {
                         it.copy(isLoading = false, data = newsData)
                     }
                 } else {
-                    updatePageState(NewsType.TIEBA){
+                    updatePageState(NewsType.TIEBA) {
                         Log.d(TAG, "getTieBaData: 获取贴吧数据失败.失败code为${tieBaData.code()}")
-                        it.copy(isLoading = false, error = "获取贴吧数据失败.失败code为${tieBaData.code()}")
+                        it.copy(
+                            isLoading = false,
+                            error = "获取贴吧数据失败.失败code为${tieBaData.code()}"
+                        )
                     }
                 }
             } catch (e: Exception) {
                 Log.d(TAG, "getTieBaData: 获取贴吧数据失败,失败信息为：${e.message}")
-                updatePageState(NewsType.TIEBA){
+                updatePageState(NewsType.TIEBA) {
                     it.copy(isLoading = false, error = "获取贴吧数据失败,失败信息为：${e.message}")
                 }
             }
@@ -111,8 +154,8 @@ class NewsViewModel: ViewModel() {
         }
     }
 
-    private fun getDouYinData(){
-        updatePageState(NewsType.DOUYIN){
+    private fun getDouYinData() {
+        updatePageState(NewsType.DOUYIN) {
             Log.d(TAG, "getDouYinData: start")
             it.copy(isLoading = true, error = null)
         }
@@ -131,17 +174,20 @@ class NewsViewModel: ViewModel() {
                         NewsData(k.word, "https://www.douyin.com/hot/${k.sentence_id}")
                     }
                     Log.d(TAG, "getDouYinData: success newsData.size = ${newsData?.size}")
-                    updatePageState(NewsType.DOUYIN){
+                    updatePageState(NewsType.DOUYIN) {
                         it.copy(isLoading = false, data = newsData)
                     }
                 } else {
-                    updatePageState(NewsType.DOUYIN){
+                    updatePageState(NewsType.DOUYIN) {
                         Log.d(TAG, "getDouYinData: 获取抖音数据失败.失败code为${douYinData.code()}")
-                        it.copy(isLoading = false, error = "获取抖音数据失败.失败code为${douYinData.code()}")
+                        it.copy(
+                            isLoading = false,
+                            error = "获取抖音数据失败.失败code为${douYinData.code()}"
+                        )
                     }
                 }
             } catch (e: Exception) {
-                updatePageState(NewsType.DOUYIN){
+                updatePageState(NewsType.DOUYIN) {
                     Log.d(TAG, "getDouYinData: 获取抖音数据失败,失败信息为：${e.message}")
                     it.copy(isLoading = false, error = "获取抖音数据失败,失败信息为：${e.message}")
                 }
@@ -149,8 +195,8 @@ class NewsViewModel: ViewModel() {
         }
     }
 
-    private fun getWallStreetData(){
-        updatePageState(NewsType.WALLSTREET){
+    private fun getWallStreetData() {
+        updatePageState(NewsType.WALLSTREET) {
             Log.d(TAG, "getWallStreetData: start")
             it.copy(isLoading = true, error = null)
         }
@@ -160,11 +206,13 @@ class NewsViewModel: ViewModel() {
                 if (wallStreetData.isSuccessful) {
                     wallStreetData.body().let {
                         val newsData = it?.data?.items?.filter { k ->
-                            (k.resource_type !="theme" && k.resource_type !="ad"
-                                    && k.resource.type !="live")
+                            (k.resource_type != "theme" && k.resource_type != "ad"
+                                    && k.resource.type != "live")
                         }?.map { k ->
-                            NewsData(k.resource.title.ifEmpty { k.resource.content_short },
-                                k.resource.uri)
+                            NewsData(
+                                k.resource.title.ifEmpty { k.resource.content_short },
+                                k.resource.uri
+                            )
                         }
                         Log.d(TAG, "getWallStreetData: success newsData.size = ${newsData?.size}")
                         updatePageState(NewsType.WALLSTREET) { pageState ->
@@ -173,14 +221,23 @@ class NewsViewModel: ViewModel() {
                     }
                 } else {
                     updatePageState(NewsType.WALLSTREET) {
-                        Log.d(TAG, "getWallStreetData: 获取华尔街见闻数据失败.失败code为${wallStreetData.code()}")
-                        it.copy(isLoading = false, error = "获取华尔街见闻数据失败.失败code为${wallStreetData.code()}")
+                        Log.d(
+                            TAG,
+                            "getWallStreetData: 获取华尔街见闻数据失败.失败code为${wallStreetData.code()}"
+                        )
+                        it.copy(
+                            isLoading = false,
+                            error = "获取华尔街见闻数据失败.失败code为${wallStreetData.code()}"
+                        )
                     }
                 }
             } catch (e: Exception) {
                 updatePageState(NewsType.WALLSTREET) {
                     Log.d(TAG, "getWallStreetData: 获取华尔街见闻数据失败,失败信息为：${e.message}")
-                    it.copy(isLoading = false, error = "获取华尔街见闻数据失败,失败信息为：${e.message}")
+                    it.copy(
+                        isLoading = false,
+                        error = "获取华尔街见闻数据失败,失败信息为：${e.message}"
+                    )
                 }
             }
         }
@@ -199,18 +256,22 @@ class NewsViewModel: ViewModel() {
                         if (it?.ok != 1) {
                             return@let null
                         }
-                        val newsDataTemp = it.data.cards.firstOrNull()?.card_group?.
-                        filterIndexed { index, _ -> index != 0 //过滤第一个元素
-                        }?.filter { card ->
-                            Log.d(TAG, "getWeiboData:card.actionlog.ext = ${card.actionlog.ext}")
-                            !card.actionlog.ext.contains("ads_word")
-                        }?.map { card ->
-                            NewsData(
-                                title = card.desc,
-                                url = card.scheme
-                            )
-                        }
-                       return@let newsDataTemp
+                        val newsDataTemp =
+                            it.data.cards.firstOrNull()?.card_group?.filterIndexed { index, _ ->
+                                index != 0 //过滤第一个元素
+                            }?.filter { card ->
+                                Log.d(
+                                    TAG,
+                                    "getWeiboData:card.actionlog.ext = ${card.actionlog.ext}"
+                                )
+                                !card.actionlog.ext.contains("ads_word")
+                            }?.map { card ->
+                                NewsData(
+                                    title = card.desc,
+                                    url = card.scheme
+                                )
+                            }
+                        return@let newsDataTemp
                     }
                     Log.d(TAG, "getWeiboData: success newsData.size = ${newsData?.size}")
                     updatePageState(NewsType.WEIBO) {
@@ -219,10 +280,13 @@ class NewsViewModel: ViewModel() {
                 } else {
                     updatePageState(NewsType.WEIBO) {
                         Log.d(TAG, "getWeiboData: 获取微博数据失败.失败code为${weiboData.code()}")
-                        it.copy(isLoading = false, error = "获取微博数据失败.失败code为${weiboData.code()}")
+                        it.copy(
+                            isLoading = false,
+                            error = "获取微博数据失败.失败code为${weiboData.code()}"
+                        )
                     }
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 updatePageState(NewsType.WEIBO) {
                     Log.d(TAG, "getWeiboData: 获取微博数据失败,失败信息为：${e.message}")
                     it.copy(isLoading = false, error = "获取微博数据失败,失败信息为：${e.message}")
@@ -252,7 +316,10 @@ class NewsViewModel: ViewModel() {
                 } else {
                     updatePageState(NewsType.ZHIHU) {
                         Log.d(TAG, "getZhiHuData: 获取知乎数据失败.失败code为${zhiHuData.code()}")
-                        it.copy(isLoading = false, error = "获取知乎数据失败.失败code为${zhiHuData.code()}")
+                        it.copy(
+                            isLoading = false,
+                            error = "获取知乎数据失败.失败code为${zhiHuData.code()}"
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -275,7 +342,10 @@ class NewsViewModel: ViewModel() {
                 if (touTiaoData.isSuccessful) {
                     touTiaoData.body().let {
                         val newsData = it?.data?.map { item ->
-                            NewsData(item.Title, "https://www.toutiao.com/trending/${item.ClusterIdStr}")
+                            NewsData(
+                                item.Title,
+                                "https://www.toutiao.com/trending/${item.ClusterIdStr}"
+                            )
                         }
                         Log.d(TAG, "getToutiaoData: success newsData.size = ${newsData?.size}")
                         updatePageState(NewsType.TOUTIAO) { pageState ->
@@ -284,14 +354,23 @@ class NewsViewModel: ViewModel() {
                     }
                 } else {
                     updatePageState(NewsType.TOUTIAO) {
-                        Log.d(TAG, "getToutiaoData: 获取今日头条数据失败.失败code为${touTiaoData.code()}")
-                        it.copy(isLoading = false, error = "获取今日头条数据失败.失败code为${touTiaoData.code()}")
+                        Log.d(
+                            TAG,
+                            "getToutiaoData: 获取今日头条数据失败.失败code为${touTiaoData.code()}"
+                        )
+                        it.copy(
+                            isLoading = false,
+                            error = "获取今日头条数据失败.失败code为${touTiaoData.code()}"
+                        )
                     }
                 }
             } catch (e: Exception) {
                 updatePageState(NewsType.TOUTIAO) {
                     Log.d(TAG, "getToutiaoData: 获取今日头条数据失败,失败信息为：${e.message}")
-                    it.copy(isLoading = false, error = "获取今日头条数据失败,失败信息为：${e.message}")
+                    it.copy(
+                        isLoading = false,
+                        error = "获取今日头条数据失败,失败信息为：${e.message}"
+                    )
                 }
             }
         }
@@ -317,20 +396,29 @@ class NewsViewModel: ViewModel() {
         }
     }
 
-    private fun updatePageState(pageType: NewsType, update:(ResponseState) -> ResponseState){
+    private fun updatePageState(pageType: NewsType, update: (ResponseState) -> ResponseState) {
         updateState { currentState ->
             currentState.copy(
-                multiListState =currentState.multiListState.toMutableMap().apply {
+                multiListState = currentState.multiListState.toMutableMap().apply {
                     this[pageType] = update(this[pageType]!!)
                 }
             )
         }
     }
 
-    private fun updateState(update:(MultiState) -> MultiState){
+    private fun updateState(update: (MultiState) -> MultiState) {
         _newsData.update {
             update(it)
         }
+    }
+
+    private fun getCookiesForResponse(cookieResponse: Response<Void>):String{
+        val cookie = cookieResponse.headers().values("Set-Cookie")
+        val cookieString = cookie.joinToString("; ") { it ->
+            it.substringBefore(";")
+        }
+
+        return cookieString
     }
 
 }
