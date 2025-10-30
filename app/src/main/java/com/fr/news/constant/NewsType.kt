@@ -7,5 +7,8 @@ enum class NewsType {
     DOUYIN,
     TIEBA,
     TOUTIAO,
-    XUEQIU
+    XUEQIU,
+    CLS_TELEGRAPH,
+    CLS_DEPTH,
+    CLS_HOT
 }

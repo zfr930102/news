@@ -1,6 +1,9 @@
 package com.fr.news.model.service.api_interface
 
 import com.fr.news.model.data.BaiduTieBaResponse
+import com.fr.news.model.data.CLSDepthResponse
+import com.fr.news.model.data.CLSHotResponse
+import com.fr.news.model.data.CLSTelegraphResponse
 import com.fr.news.model.data.ToutiaoResponse
 import com.fr.news.model.data.WallStreetResponse
 import com.fr.news.model.data.WeiboResponse
@@ -83,6 +86,17 @@ interface XueQiuApiService {
         @Query("type") type:Int = 10,
         @Header("Cookie") cookie:String
     ): Response<XueQiuResponse>
+}
+
+interface CLSApiService {
+    @GET("v3/depth/home/assembled/1000")
+    suspend fun getCLSDepthData(@Query("query") query:String): Response<CLSDepthResponse>
+
+    @GET("v2/article/hot/list")
+    suspend fun getCLSHotData(@Query("query") query:String): Response<CLSHotResponse>
+
+    @GET("nodeapi/updateTelegraphList")
+    suspend fun getCLSTelegraphData(@Query("query") query:String): Response<CLSTelegraphResponse>
 }
 
 

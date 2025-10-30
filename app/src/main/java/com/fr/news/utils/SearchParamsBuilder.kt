@@ -12,7 +12,7 @@ class SearchParamsBuilder {
         }
     }
 
-    private suspend fun getClsSearchParams(moreParams: Map<String, Any> = emptyMap()): String {
+    private fun getClsSearchParams(moreParams: Map<String, Any> = emptyMap()): String {
         //合并基础参数跟额外参数
         val allParams = mergeParams(ApiConstants.CLS_BASE_PARAMS, moreParams)
         Log.d(TAG, "getClsSearchParams: mergeParams = $allParams")

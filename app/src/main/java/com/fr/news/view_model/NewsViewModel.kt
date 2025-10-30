@@ -1,18 +1,20 @@
 package com.fr.news.view_model
 
 import android.util.Log
-import androidx.compose.foundation.pager.PagerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fr.news.constant.NewsType
+import com.fr.news.model.data.CLSDepthResponse
+import com.fr.news.model.data.CLSHotResponse
+import com.fr.news.model.data.CLSTelegraphResponse
 import com.fr.news.model.data.NewsData
-import com.fr.news.model.data.ToutiaoData
 import com.fr.news.model.service.RetrofitClient
 import com.fr.news.state.MultiState
 import com.fr.news.state.RequestState
 import com.fr.news.state.ResponseState
 import com.fr.news.utils.BASE_TAG
-import com.fr.news.utils.encodeURIComponent
+import com.fr.news.utils.SearchParamsBuilder
+import com.fr.news.utils.SearchParamsChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,8 +75,109 @@ class NewsViewModel : ViewModel() {
                 Log.d(TAG, "getData: XUEQIU")
                 getXueQiuData()
             }
+
+            NewsType.CLS_TELEGRAPH -> {
+                Log.d(TAG, "getData: CLS_TELEGRAPH")
+                getCLSData(NewsType.CLS_TELEGRAPH)
+            }
+            NewsType.CLS_DEPTH -> {
+                Log.d(TAG, "getData: CLS_DEPTH")
+                getCLSData(NewsType.CLS_DEPTH)
+            }
+            NewsType.CLS_HOT -> {
+                Log.d(TAG, "getData: CLS_HOT")
+                getCLSData(NewsType.CLS_HOT)
+            }
         }
         Log.d(TAG, "getData: end")
+    }
+
+    private fun getCLSData(type: NewsType) {
+        updatePageState(pageType = type){
+            Log.d(TAG, "getCLSData: start")
+            it.copy(isLoading = true, error = null)
+        }
+        viewModelScope.launch {
+            try {
+                val query = SearchParamsBuilder.instance.getSearchParamsSync(
+                    emptyMap(),
+                    SearchParamsChannel.CLS_SEARCH_PARAMS_CHANNEL
+                )
+                var response: Response<*> = Response.error<Any>(600,okhttp3.ResponseBody.create(null, "Unsupported type"))
+                when(type){
+                    NewsType.CLS_TELEGRAPH -> {
+                        response = retrofitClient.clsApiService.getCLSTelegraphData(query)
+                    }
+                    NewsType.CLS_DEPTH -> {
+                        response = retrofitClient.clsApiService.getCLSDepthData(query)
+                    }
+                    NewsType.CLS_HOT -> {
+                        response = retrofitClient.clsApiService.getCLSHotData(query)
+                    }
+                    else -> {
+                        Response.error<Any>(600,okhttp3.ResponseBody.create(null, "Unsupported type"))
+                    }
+                }
+
+                if (response.isSuccessful) {
+                    val clsNewsData: List<NewsData>? = response.body()?.let {
+                        parseClsData(it, type)
+                    }
+                    Log.d(TAG, "getCLSData: data size = ${clsNewsData?.size} type = ${type.name}")
+                    updatePageState(type) {
+                        it.copy(isLoading = false, data = clsNewsData)
+                    }
+                } else {
+                    updatePageState(type){
+                        Log.d(TAG, "getCLSData: failed code ${response.code()} type = ${type.name}")
+                        it.copy(isLoading = false, error = "获取财联社电报数据失败,失败信息为：${response.code()}")
+                    }
+                }
+            } catch (e: Exception) {
+                updatePageState(type){
+                    Log.d(TAG, "getCLSData: 获取财联社电报数据失败，失败信息是：${e.message} type = ${type.name}")
+                    it.copy(isLoading = false, error = "获取财联社电报数据失败，失败信息是：${e.message}")
+                }
+
+            }
+        }
+    }
+
+    private fun parseClsData(data: Any, type: NewsType): List<NewsData>? {
+        return when(type){
+            NewsType.CLS_TELEGRAPH -> {
+                val clsTelegraphData = data as CLSTelegraphResponse
+                clsTelegraphData.data.roll_data.filter { !it.is_ad }.map {
+                    NewsData(
+                        title = it.title ?:it.brief,
+                        url = "https://www.cls.cn/detail/${it.id}"
+                    )
+                }
+            }
+            NewsType.CLS_DEPTH -> {
+                val clsDepthData = data as CLSDepthResponse
+                clsDepthData.data.depth_list.sortedByDescending { it.ctime}.map {
+                    NewsData(
+                        title = it.title ?:it.brief,
+                        url = "https://www.cls.cn/detail/${it.id}"
+                    )
+                }
+            }
+
+            NewsType.CLS_HOT -> {
+                val clsHotData = data as CLSHotResponse
+                clsHotData.data.map {
+                    NewsData(
+                        title = it.title ?:it.brief,
+                        url = "https://www.cls.cn/detail/${it.id}"
+                    )
+                }
+            }
+
+            else -> {
+                null
+            }
+        }
     }
 
     private fun getXueQiuData() {

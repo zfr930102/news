@@ -42,14 +42,25 @@ val newsTitleList = listOf(
 //        title = "澎湃新闻",
 //        type = NewsType.THEPAPER
 //    ),
-//    NewTitleItem(
-//        imageRes = R.mipmap.cls,
-//        title = "财联社"
-//    ),
     NewTitleItem(
         imageRes = R.mipmap.xueqiu,
         title = "雪球",
         type = NewsType.XUEQIU
+    ),
+    NewTitleItem(
+        imageRes = R.mipmap.cls,
+        title = "财联社（电报）",
+        type = NewsType.CLS_TELEGRAPH
+    ),
+    NewTitleItem(
+        imageRes = R.mipmap.cls,
+        title = "财联社（深度）",
+        type = NewsType.CLS_DEPTH
+    ),
+    NewTitleItem(
+        imageRes = R.mipmap.cls,
+        title = "财联社（热门）",
+        type = NewsType.CLS_HOT
     ),
 //    NewTitleItem(
 //        imageRes = R.mipmap.hackernews,

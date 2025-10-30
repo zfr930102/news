@@ -8,6 +8,7 @@ import androidx.annotation.RequiresPermission
 import com.fr.news.constant.BaseUrl
 import com.fr.news.manager.appContext
 import com.fr.news.model.service.api_interface.BaiduTieBaApiService
+import com.fr.news.model.service.api_interface.CLSApiService
 import com.fr.news.model.service.api_interface.DouYinApiService
 import com.fr.news.model.service.api_interface.ToutiaoApiService
 import com.fr.news.model.service.api_interface.WallStreetCNApiService
@@ -176,6 +177,11 @@ class RetrofitClient {
         Retrofit.Builder().baseUrl(BaseUrl.XUE_QIU_BASE_URL)
             .client(okHttpClient).addConverterFactory(GsonConverterFactory.create()).build()
             .create(XueQiuApiService::class.java)
+
+    val clsApiService: CLSApiService =
+        Retrofit.Builder().baseUrl(BaseUrl.CLS_BASE_URL).client(okHttpClient).addConverterFactory(
+            GsonConverterFactory.create()
+        ).build().create(CLSApiService::class.java)
 }
 
 class RequestCanceledException(message: String) : IOException(message)
