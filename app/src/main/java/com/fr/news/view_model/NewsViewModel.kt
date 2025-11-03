@@ -131,7 +131,7 @@ class NewsViewModel : ViewModel() {
 //                    }
                     val newsNowResponse = response.body() as NewsNowResponse
                     val clsNewsData: List<NewsData>? = newsNowResponse.items.map {
-                        NewsData(it.title, it.mobileUrl)
+                        NewsData(it.title, it.mobileUrl?.takeIf { it.isNotEmpty() }?:it.url)
                     }
                     Log.d(TAG, "getCLSData: data size = ${clsNewsData?.size} type = ${type.name}")
                     updatePageState(type) {

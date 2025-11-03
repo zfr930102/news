@@ -265,7 +265,7 @@ fun ErrorView(error: String, onRetry: () -> Unit, modifier: Modifier = Modifier)
         Text(
             text = error,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center
         )
 

@@ -117,23 +117,8 @@ class RetrofitClient {
             val newRequest = originalRequest.newBuilder().apply {
                 // 添加浏览器标识头
                 header("User-Agent", USER_AGENT)
-                header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
-                header("Accept-Language", "zh-CN,zh;q=0.9")
+                header("Accept-Language", "zh-CN")
                 header("Accept-Encoding", "gzip")
-                header("Cache-Control", "max-age=0")
-                header("Upgrade-Insecure-Requests", "1")
-
-                // 安全相关头
-                header("Sec-Ch-Ua", "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"")
-                header("Sec-Ch-Ua-Mobile", "?1")
-                header("Sec-Ch-Ua-Platform", "\"Android\"")
-                header("Sec-Fetch-Dest", "document")
-                header("Sec-Fetch-Mode", "navigate")
-                header("Sec-Fetch-Site", "none")
-                header("Sec-Fetch-User", "?1")
-
-                // 优先级
-                header("Priority", "u=0, i")
 
             }.build()
 

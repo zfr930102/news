@@ -24,7 +24,7 @@ interface ToutiaoApiService {
 }
 
 interface WeiboApiService{
-    @Headers("Content-Type: application/json", "referer:https://s.weibo" +
+    @Headers("referer:https://s.weibo" +
             ".com/top/summary?cate=realtimehot","mweibo-pwa:1","x-requested-with:XMLHttpRequest")
     @GET("api/container/getIndex")
     suspend fun getWeiboData(
