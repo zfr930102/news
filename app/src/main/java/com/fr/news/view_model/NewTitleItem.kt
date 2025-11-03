@@ -52,16 +52,16 @@ val newsTitleList = listOf(
         title = "财联社（电报）",
         type = NewsType.CLS_TELEGRAPH
     ),
-    NewTitleItem(
-        imageRes = R.mipmap.cls,
-        title = "财联社（深度）",
-        type = NewsType.CLS_DEPTH
-    ),
-    NewTitleItem(
-        imageRes = R.mipmap.cls,
-        title = "财联社（热门）",
-        type = NewsType.CLS_HOT
-    ),
+//    NewTitleItem(
+//        imageRes = R.mipmap.cls,
+//        title = "财联社（深度）",
+//        type = NewsType.CLS_DEPTH
+//    ),
+//    NewTitleItem(
+//        imageRes = R.mipmap.cls,
+//        title = "财联社（热门）",
+//        type = NewsType.CLS_HOT
+//    ),
 //    NewTitleItem(
 //        imageRes = R.mipmap.hackernews,
 //        title = "Hacker News"

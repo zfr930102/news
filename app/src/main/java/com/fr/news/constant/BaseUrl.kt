@@ -10,4 +10,5 @@ object BaseUrl {
     const val XUE_QIU_COOKIE_BASE_URL = "https://xueqiu.com/"
     const val XUE_QIU_BASE_URL = "https://stock.xueqiu.com/"
     const val CLS_BASE_URL = "https://www.cls.cn/"
+    const val NEWS_NOW_BASE_URL = "https://newsnow.busiyi.world/"
 }

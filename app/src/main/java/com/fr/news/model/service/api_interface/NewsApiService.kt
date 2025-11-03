@@ -9,7 +9,9 @@ import com.fr.news.model.data.WallStreetResponse
 import com.fr.news.model.data.WeiboResponse
 import com.fr.news.model.data.ZhiHuResponse
 import com.fr.news.model.data.DouYinResponse
+import com.fr.news.model.data.NewsNowResponse
 import com.fr.news.model.data.XueQiuResponse
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -97,6 +99,13 @@ interface CLSApiService {
 
     @GET("nodeapi/updateTelegraphList")
     suspend fun getCLSTelegraphData(@Query("query") query:String): Response<CLSTelegraphResponse>
+}
+
+interface NewsNowApiService {
+    @GET("api/s")
+    suspend fun getNewsNowData(
+        @Query("id") id: String,
+    ): Response<NewsNowResponse>
 }
 
 

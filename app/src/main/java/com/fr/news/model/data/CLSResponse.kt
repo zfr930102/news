@@ -6,7 +6,7 @@ data class CLSItem(
     val brief: String?,
     val shareurl: String,
     val ctime: String,
-    val is_ad: Boolean
+    val is_ad: Int
 )
 
 data class CLSDepthData(

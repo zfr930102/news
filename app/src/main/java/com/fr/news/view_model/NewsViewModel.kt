@@ -3,11 +3,15 @@ package com.fr.news.view_model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fr.news.constant.CLS_DEPTH_CHANNEL_ID
+import com.fr.news.constant.CLS_HOT_CHANNEL_ID
+import com.fr.news.constant.CLS_TELEGRAPH_CHANNEL_ID
 import com.fr.news.constant.NewsType
 import com.fr.news.model.data.CLSDepthResponse
 import com.fr.news.model.data.CLSHotResponse
 import com.fr.news.model.data.CLSTelegraphResponse
 import com.fr.news.model.data.NewsData
+import com.fr.news.model.data.NewsNowResponse
 import com.fr.news.model.service.RetrofitClient
 import com.fr.news.state.MultiState
 import com.fr.news.state.RequestState
@@ -21,6 +25,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okio.Buffer
+import okio.GzipSource
 import retrofit2.Response
 import kotlin.apply
 import kotlin.collections.toMutableMap
@@ -106,13 +112,13 @@ class NewsViewModel : ViewModel() {
                 var response: Response<*> = Response.error<Any>(600,okhttp3.ResponseBody.create(null, "Unsupported type"))
                 when(type){
                     NewsType.CLS_TELEGRAPH -> {
-                        response = retrofitClient.clsApiService.getCLSTelegraphData(query)
+                        response = retrofitClient.newsNowApiService.getNewsNowData(CLS_TELEGRAPH_CHANNEL_ID)
                     }
                     NewsType.CLS_DEPTH -> {
-                        response = retrofitClient.clsApiService.getCLSDepthData(query)
+                        response = retrofitClient.newsNowApiService.getNewsNowData(CLS_DEPTH_CHANNEL_ID)
                     }
                     NewsType.CLS_HOT -> {
-                        response = retrofitClient.clsApiService.getCLSHotData(query)
+                        response = retrofitClient.newsNowApiService.getNewsNowData(CLS_HOT_CHANNEL_ID)
                     }
                     else -> {
                         Response.error<Any>(600,okhttp3.ResponseBody.create(null, "Unsupported type"))
@@ -120,8 +126,12 @@ class NewsViewModel : ViewModel() {
                 }
 
                 if (response.isSuccessful) {
-                    val clsNewsData: List<NewsData>? = response.body()?.let {
-                        parseClsData(it, type)
+//                    val clsNewsData: List<NewsData>? = response.body()?.let {
+//                        parseClsData(it, type)
+//                    }
+                    val newsNowResponse = response.body() as NewsNowResponse
+                    val clsNewsData: List<NewsData>? = newsNowResponse.items.map {
+                        NewsData(it.title, it.mobileUrl)
                     }
                     Log.d(TAG, "getCLSData: data size = ${clsNewsData?.size} type = ${type.name}")
                     updatePageState(type) {
@@ -147,9 +157,9 @@ class NewsViewModel : ViewModel() {
         return when(type){
             NewsType.CLS_TELEGRAPH -> {
                 val clsTelegraphData = data as CLSTelegraphResponse
-                clsTelegraphData.data.roll_data.filter { !it.is_ad }.map {
+                clsTelegraphData.data.roll_data.filter { it.is_ad != 1 }.map {
                     NewsData(
-                        title = it.title ?:it.brief,
+                        title = it.title?.takeIf { it.isNotEmpty() } ?: it.brief,
                         url = "https://www.cls.cn/detail/${it.id}"
                     )
                 }

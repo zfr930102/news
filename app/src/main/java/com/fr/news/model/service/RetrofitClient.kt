@@ -10,17 +10,23 @@ import com.fr.news.manager.appContext
 import com.fr.news.model.service.api_interface.BaiduTieBaApiService
 import com.fr.news.model.service.api_interface.CLSApiService
 import com.fr.news.model.service.api_interface.DouYinApiService
+import com.fr.news.model.service.api_interface.NewsNowApiService
 import com.fr.news.model.service.api_interface.ToutiaoApiService
 import com.fr.news.model.service.api_interface.WallStreetCNApiService
 import com.fr.news.model.service.api_interface.WeiboApiService
 import com.fr.news.model.service.api_interface.XueQiuApiService
 import com.fr.news.model.service.api_interface.XueQiuCookieApiService
 import com.fr.news.model.service.api_interface.ZhiHuApiService
+import com.fr.news.utils.BASE_TAG
+import com.fr.news.utils.GzipDecompressionInterceptor
+import com.google.gson.GsonBuilder
 import okhttp3.Cache
 import okhttp3.CacheControl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.Buffer
+import okio.GzipSource
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
@@ -31,10 +37,11 @@ const val CACHE_SIZE = 10 * 1024 * 1024 // 10MB
 const val CONNECT_TIMEOUT = 15L // 15秒
 const val READ_TIMEOUT = 30L // 30秒
 const val WRITE_TIMEOUT = 30L // 30秒
-const val TAG = "RetrofitClient"
+const val TAG = BASE_TAG + "RetrofitClient"
 
 class RetrofitClient {
     var okHttpClient = createOkHttpClient()
+    var newsNowOkHttpClient = createNewsNowOkHttpClient()
 
     fun createOkHttpClient(): OkHttpClient {
         // 创建缓存目录
@@ -52,6 +59,86 @@ class RetrofitClient {
             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true) // 自动重连
             .build()
+    }
+
+    fun createNewsNowOkHttpClient(): OkHttpClient {
+        val cacheDir = File(System.getProperty("java.io.tmpdir"), "news_now_okhttp_cache")
+        val cache = Cache(cacheDir, CACHE_SIZE.toLong())
+        return OkHttpClient.Builder()
+            .cache(cache) // 添加缓存
+            .addNetworkInterceptor(createCacheInterceptor()) // 网络层缓存拦截器
+            .addInterceptor(createLoggingInterceptor()) // 添加日志拦截器
+            .addInterceptor(createHeadersInterceptor())
+            .addInterceptor(createOfflineCacheInterceptor()) // 离线缓存拦截器
+            .addInterceptor(errorHandleInterceptor())
+            .addInterceptor(Interceptor { chain ->
+            val request = chain.request()
+            val response = chain.proceed(request)
+
+            // 检查并处理 GZIP 压缩
+            val contentEncoding = response.header("Content-Encoding")
+            if (contentEncoding != null && contentEncoding.contains("gzip", true)) {
+                // OkHttp 通常会自动处理 GZIP，但如果出现问题可以手动处理
+                val source = response.body?.source()
+                if (source != null) {
+                    try {
+                        val gzipSource = GzipSource(source)
+                        val buffer = Buffer()
+                        buffer.writeAll(gzipSource)
+                        gzipSource.close()
+
+                        val contentType = response.body?.contentType()
+                        val responseBody = okhttp3.ResponseBody.create(contentType, buffer.readByteString())
+                        Log.d(TAG, "createNewsNowOkHttpClient: responseBody = ${responseBody.contentLength()}")
+                        return@Interceptor response.newBuilder()
+                            .body(responseBody)
+                            .header("Content-Encoding", "") // 移除编码头避免重复处理
+                            .build()
+                    } catch (e: Exception) {
+                        // 如果手动处理失败，返回原始响应
+                        return@Interceptor response
+                    }
+                }
+            }
+            response
+        })
+            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true) // 自动重连
+            .build()
+     }
+    private val USER_AGENT = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36"
+
+    private fun createHeadersInterceptor(): Interceptor {
+        return Interceptor { chain ->
+            val originalRequest = chain.request()
+
+            val newRequest = originalRequest.newBuilder().apply {
+                // 添加浏览器标识头
+                header("User-Agent", USER_AGENT)
+                header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                header("Accept-Language", "zh-CN,zh;q=0.9")
+                header("Accept-Encoding", "gzip")
+                header("Cache-Control", "max-age=0")
+                header("Upgrade-Insecure-Requests", "1")
+
+                // 安全相关头
+                header("Sec-Ch-Ua", "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"")
+                header("Sec-Ch-Ua-Mobile", "?1")
+                header("Sec-Ch-Ua-Platform", "\"Android\"")
+                header("Sec-Fetch-Dest", "document")
+                header("Sec-Fetch-Mode", "navigate")
+                header("Sec-Fetch-Site", "none")
+                header("Sec-Fetch-User", "?1")
+
+                // 优先级
+                header("Priority", "u=0, i")
+
+            }.build()
+
+            chain.proceed(newRequest)
+        }
     }
 
     // 创建日志拦截器
@@ -109,7 +196,7 @@ class RetrofitClient {
                 val response = chain.proceed(request)
 
                 if (!response.isSuccessful) {
-                    Log.e("OkHttp", "HTTP错误: ${response.code}")
+                    Log.e(TAG, "HTTP错误: ${response.code}")
                 }
 
                 return@Interceptor response
@@ -182,6 +269,14 @@ class RetrofitClient {
         Retrofit.Builder().baseUrl(BaseUrl.CLS_BASE_URL).client(okHttpClient).addConverterFactory(
             GsonConverterFactory.create()
         ).build().create(CLSApiService::class.java)
+
+    val gson = GsonBuilder().setLenient().create()
+    val newsNowApiService: NewsNowApiService = Retrofit.Builder()
+        .baseUrl(BaseUrl.NEWS_NOW_BASE_URL)
+        .client(newsNowOkHttpClient)
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .build()
+        .create(NewsNowApiService::class.java)
 }
 
 class RequestCanceledException(message: String) : IOException(message)

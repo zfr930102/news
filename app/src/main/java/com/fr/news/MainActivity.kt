@@ -90,7 +90,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        DouyinCookieManager.getInstance(appContext).fetchDouyinCookies()
     }
 }
 
