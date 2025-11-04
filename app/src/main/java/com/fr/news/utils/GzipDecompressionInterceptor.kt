@@ -27,7 +27,7 @@ class GzipDecompressionInterceptor : Interceptor {
                     val contentType = response.body?.contentType()
                     val responseBody =
                         okhttp3.ResponseBody.create(contentType, buffer.readByteString())
-                    Log.d(TAG, "intercept: responseBody.string() = ${responseBody.string()}")
+                    Log.d(TAG, "intercept: responseBody contentLength =: ${responseBody.contentLength()}")
                     return response.newBuilder()
                         .body(responseBody)
                         .header("Content-Encoding", "") // 移除编码头避免重复处理

@@ -25,7 +25,9 @@ interface ToutiaoApiService {
 
 interface WeiboApiService{
     @Headers("referer:https://s.weibo" +
-            ".com/top/summary?cate=realtimehot","mweibo-pwa:1","x-requested-with:XMLHttpRequest")
+            ".com/top/summary?cate=realtimehot","mweibo-pwa:1","x-requested-with:XMLHttpRequest",
+        "Accept:application/json","Accept-Language:zh-CN","Accept-Encoding:gzip",
+        "User-Agent:Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36")
     @GET("api/container/getIndex")
     suspend fun getWeiboData(
         @Query("containerid") containerid: String = "106003type%3D25%26t%3D3%26disable_hot%3D1%26filter_type%3Drealtimehot&title=%E5%BE%AE%E5%8D%9A%E7%83%AD%E6%90%9C&extparam=filter_type%3Drealtimehot%26mi_cid%3D100103%26pos%3D0_0%26c_type%3D30%26display_time%3D1540538388&luicode=10000011&lfid=231583")

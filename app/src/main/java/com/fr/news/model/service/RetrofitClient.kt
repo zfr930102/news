@@ -42,7 +42,7 @@ const val TAG = BASE_TAG + "RetrofitClient"
 class RetrofitClient {
     var okHttpClient = createOkHttpClient()
     var newsNowOkHttpClient = createNewsNowOkHttpClient()
-
+    val gson = GsonBuilder().setLenient().create()
     fun createOkHttpClient(): OkHttpClient {
         // 创建缓存目录
         val cacheDir = File(System.getProperty("java.io.tmpdir"), "okhttp_cache")
@@ -53,6 +53,7 @@ class RetrofitClient {
             .addInterceptor(createLoggingInterceptor()) // 添加日志拦截器
             .addNetworkInterceptor(createCacheInterceptor()) // 网络层缓存拦截器
             .addInterceptor(createOfflineCacheInterceptor()) // 离线缓存拦截器
+            .addInterceptor(GzipDecompressionInterceptor())
             .addInterceptor(errorHandleInterceptor())
             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
@@ -71,37 +72,7 @@ class RetrofitClient {
             .addInterceptor(createHeadersInterceptor())
             .addInterceptor(createOfflineCacheInterceptor()) // 离线缓存拦截器
             .addInterceptor(errorHandleInterceptor())
-            .addInterceptor(Interceptor { chain ->
-            val request = chain.request()
-            val response = chain.proceed(request)
-
-            // 检查并处理 GZIP 压缩
-            val contentEncoding = response.header("Content-Encoding")
-            if (contentEncoding != null && contentEncoding.contains("gzip", true)) {
-                // OkHttp 通常会自动处理 GZIP，但如果出现问题可以手动处理
-                val source = response.body?.source()
-                if (source != null) {
-                    try {
-                        val gzipSource = GzipSource(source)
-                        val buffer = Buffer()
-                        buffer.writeAll(gzipSource)
-                        gzipSource.close()
-
-                        val contentType = response.body?.contentType()
-                        val responseBody = okhttp3.ResponseBody.create(contentType, buffer.readByteString())
-                        Log.d(TAG, "createNewsNowOkHttpClient: responseBody = ${responseBody.contentLength()}")
-                        return@Interceptor response.newBuilder()
-                            .body(responseBody)
-                            .header("Content-Encoding", "") // 移除编码头避免重复处理
-                            .build()
-                    } catch (e: Exception) {
-                        // 如果手动处理失败，返回原始响应
-                        return@Interceptor response
-                    }
-                }
-            }
-            response
-        })
+            .addInterceptor(GzipDecompressionInterceptor())
             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
@@ -208,7 +179,7 @@ class RetrofitClient {
     val weiboApiService: WeiboApiService = Retrofit.Builder()
         .baseUrl(BaseUrl.WEI_BO_BASE_URL)
         .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(WeiboApiService::class.java)
 
@@ -255,7 +226,7 @@ class RetrofitClient {
             GsonConverterFactory.create()
         ).build().create(CLSApiService::class.java)
 
-    val gson = GsonBuilder().setLenient().create()
+
     val newsNowApiService: NewsNowApiService = Retrofit.Builder()
         .baseUrl(BaseUrl.NEWS_NOW_BASE_URL)
         .client(newsNowOkHttpClient)
