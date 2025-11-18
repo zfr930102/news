@@ -11,7 +11,6 @@ import com.fr.news.model.data.ZhiHuResponse
 import com.fr.news.model.data.DouYinResponse
 import com.fr.news.model.data.NewsNowResponse
 import com.fr.news.model.data.XueQiuResponse
-import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header

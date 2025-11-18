@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -124,7 +125,7 @@ fun Greeting(
             val pageState = remember(pages,index){
                 derivedStateOf { pages[currentType] }
             }.value?:return@HorizontalPager
-            Log.d(TAG, "Greeting: pageState data size = ${pageState.data?.size}")
+            Log.d(TAG, "Greeting: pageState data size = ${pageState.data?.size} pageType = $currentType")
             NewsList(pageState,onRefresh = {viewModel.getData(currentType)},currentType)
         }
     }
@@ -137,7 +138,6 @@ private fun NewsList(
     pageState: ResponseState, onRefresh: () -> Unit, currentType: NewsType
 ) {
     val isRefreshing by remember { derivedStateOf { pageState.isLoading } }
-    var isSwipeRefreshing by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,19 +145,20 @@ private fun NewsList(
             .clip(RoundedCornerShape(16.dp))
     ) {
         val listData = pageState.data?:mutableListOf()
+        // Show loading view when data is loading
+        if (pageState.isLoading) {
+            LoadingView(modifier = Modifier.fillMaxSize())
+        } 
         //错误提示
-        if (!isRefreshing && pageState.error != null) {
-            isSwipeRefreshing = false
+        else if (!isRefreshing && pageState.error != null) {
             ErrorView(pageState.error, onRetry = onRefresh, modifier = Modifier.fillMaxSize())
         }else if (( listData== null || listData.isEmpty()) && !isRefreshing) {
             Log.e(TAG, "NewsList: data is empty")
         } else {
-            isSwipeRefreshing = false
             //刷新器
             SwipeRefresh(
-                state = rememberSwipeRefreshState(isRefreshing||isSwipeRefreshing),
+                state = rememberSwipeRefreshState(false),
                 onRefresh = {
-                    isSwipeRefreshing = true
                     onRefresh()
                 },
                 indicator = { state,trigger ->
@@ -180,9 +181,6 @@ private fun NewsList(
                 }
 
                 DisposableEffect(isRefreshing) {
-                    if (!isRefreshing) {
-                        isSwipeRefreshing = false
-                    }
                     onDispose{}
                 }
             }
@@ -277,6 +275,23 @@ fun ErrorView(error: String, onRetry: () -> Unit, modifier: Modifier = Modifier)
         ) {
             Text("重试")
         }
+    }
+}
+
+@Composable
+fun LoadingView(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Log.d(TAG, "LoadingView: show")
+        CircularProgressIndicator(
+            modifier = Modifier.size(48.dp),
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(Modifier.height(16.dp))
+        Text("Loading news...", color = Color.White)
     }
 }
 
