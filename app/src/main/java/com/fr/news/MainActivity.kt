@@ -106,7 +106,15 @@ fun Greeting(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { pageCount })
 
     LaunchedEffect(pagerState.currentPage) {
-        viewModel.getData(newsTitleList[pagerState.currentPage].type)
+        val currentType = newsTitleList[pagerState.currentPage].type
+        val pageState = pages[currentType]
+        // 只有当数据为空或在加载中时才触发加载，避免重复请求
+        if (pageState?.data?.isEmpty() != false || pageState.isLoading == true) {
+            Log.d(TAG, "Loading data for type: $currentType")
+            viewModel.getData(currentType)
+        } else {
+            Log.d(TAG, "Data already loaded for type: $currentType, size: ${pageState.data?.size}")
+        }
     }
     Column(
         modifier
