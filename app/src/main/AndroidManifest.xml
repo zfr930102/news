@@ -27,7 +27,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".WebviewActivity">
+        <activity android:name=".WebviewActivity"
+            android:theme="@style/Theme.News">
 
         </activity>
     </application>

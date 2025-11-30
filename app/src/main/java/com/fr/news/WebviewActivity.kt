@@ -23,19 +23,23 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fr.news.constant.NewsType
 import com.fr.news.manager.appContext
@@ -53,6 +57,7 @@ class WebviewActivity:ComponentActivity() {
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         var webUrl = intent.getStringExtra("url") ?: "https://www.baidu.com"
         val newsType = intent.getStringExtra(/* name = */ "type")?:""
         if (NewsType.valueOf(newsType)== NewsType.DOUYIN){
@@ -85,6 +90,14 @@ fun WebViewScreen(url: String, newsType:String) {
     // 创建 WebView
     val webView = rememberWebView(url,newsType)
     val context = LocalContext.current
+    //获取WindowInsets
+    val windowInsets = ViewCompat.getRootWindowInsets(webView.rootView)
+    val top = windowInsets?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
+    val density = LocalDensity.current
+    val statusBarTopDp = with(density){
+        top.toDp()
+    }
+    Log.d(TAG, "WebViewScreen: top = $top statusBarTopDp = $statusBarTopDp")
     // 处理返回键
     BackHandler(enabled = true) {
         if (webView.canGoBack()) {
@@ -149,7 +162,8 @@ fun WebViewScreen(url: String, newsType:String) {
                     }
                 }
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f).padding(top =statusBarTopDp)
         )
     }
 }
