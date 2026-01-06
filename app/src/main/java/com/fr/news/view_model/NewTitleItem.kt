@@ -12,30 +12,9 @@ data class NewTitleItem(
 //差 酷安\虎扑
 val newsTitleList = listOf(
     NewTitleItem(
-        imageRes = R.mipmap.zhihu,
-        title = "知乎",
-        type = NewsType.ZHIHU
-    ),
-
-    NewTitleItem(
-        imageRes = R.mipmap.weibo,
-        title = "微博",
-        type = NewsType.WEIBO
-    ),
-    NewTitleItem(
         imageRes = R.mipmap.wallstreetcn,
         title = "华尔街见闻",
         type = NewsType.WALLSTREET
-    ),
-    NewTitleItem(
-        imageRes = R.mipmap.tieba,
-        title = "百度贴吧",
-        type = NewsType.TIEBA
-    ),
-    NewTitleItem(
-        imageRes = R.mipmap.toutiao,
-        title = "今日头条",
-        type = NewsType.TOUTIAO
     ),
     NewTitleItem(
         imageRes = R.mipmap.xueqiu,
@@ -57,6 +36,30 @@ val newsTitleList = listOf(
         title = "财联社（热门）",
         type = NewsType.CLS_HOT
     ),
+    NewTitleItem(
+        imageRes = R.mipmap.toutiao,
+        title = "今日头条",
+        type = NewsType.TOUTIAO
+    ),
+    NewTitleItem(
+        imageRes = R.mipmap.zhihu,
+        title = "知乎",
+        type = NewsType.ZHIHU
+    ),
+
+    NewTitleItem(
+        imageRes = R.mipmap.tieba,
+        title = "百度贴吧",
+        type = NewsType.TIEBA
+    ),
+
+
+//    NewTitleItem(
+//        imageRes = R.mipmap.weibo,
+//        title = "微博",
+//        type = NewsType.WEIBO
+//    ),
+
 //    NewTitleItem(
 //        imageRes = R.mipmap.thepaper,
 //        title = "澎湃新闻",
