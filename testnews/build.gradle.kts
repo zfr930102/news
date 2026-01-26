@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.libs
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,18 +7,20 @@ plugins {
 }
 
 android {
-    namespace = "com.fr.news"
+    namespace = "com.fr.test.news"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.fr.news"
+        applicationId = "com.fr.test.news"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 1
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testBuildType = "debug"
+        buildConfigField("String", "TARGET_PACKAGE", "\"com.fr.news\"")
+        buildConfigField("String", "TARGET_ACTIVITY", "\"/.MainActivity\"")
     }
 
     buildTypes {
@@ -37,33 +41,28 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
-        // 使用与 Kotlin 1.9.21 兼容的版本
-        kotlinCompilerExtensionVersion = "1.5.11" // 最新稳定版
+        kotlinCompilerExtensionVersion = "1.5.11"
     }
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    
+    // Compose libraries
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.retrofit2)
-    implementation(libs.retrofit2.converter.gson)
-    implementation(libs.okhttp3)
-    implementation(libs.okhttp3.logging)
     implementation(libs.gson)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.accompanist.swiperefresh)
-
-    //test 相关
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,5 +78,4 @@ dependencies {
     }
     testImplementation(kotlin("test"))
     androidTestImplementation(libs.uiautomator)
-
 }
